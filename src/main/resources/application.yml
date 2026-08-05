@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:h2:~/test-likelion # Home 디렉터리에 저장되는 H2 파일 데이터베이스
+    url: jdbc:h2:tcp://localhost/~/test-likelion # TCP 모드: H2 서버(./h2.sh)가 먼저 떠 있어야 접속 가능
     driver-class-name: org.h2.Driver # H2 드라이버 클래스
     username: sa # 기본 사용자 이름
     password: # 기본 비밀번호
@@ -10,7 +10,11 @@ spring:
       path: /h2-console # H2 콘솔의 접근 경로
   jpa:
     hibernate:
-      ddl-auto: update # Hibernate의 DDL 자동 생성 전략 (update, create, create-drop 등)
+      ddl-auto: create # Hibernate의 DDL 자동 생성 전략 (update, create, create-drop 등)
+    properties:
+      hibernate:
+        format_sql: true # 얘는 실제 디비로 나가는 sql을 보여줍니다
+
   sql:
     init:
       mode: always # 애플리케이션 시작 시 스크립트 초기화 (기본값: embedded)
