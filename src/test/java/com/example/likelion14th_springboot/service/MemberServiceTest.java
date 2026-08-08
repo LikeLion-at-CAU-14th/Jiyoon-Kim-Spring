@@ -136,5 +136,21 @@ public class MemberServiceTest {
     }
 
 
+    @Test
+    @DisplayName("회원 이름이 주어진 값으로 시작하는 회원만 조회한다.")
+    void testGetMembersByNamePrefix() {
+        // when
+        List<Member> members =
+                memberService.getMembersByNamePrefix("user1");
+
+        // then
+        assertThat(members).hasSize(11); // user1 + user1[0-9] => 11개
+
+        assertThat(members)
+                .extracting(Member::getName)
+                .allMatch(name -> name.startsWith("user1")); // user1 로 시작하는지 확인
+    }
+
+
 
 }

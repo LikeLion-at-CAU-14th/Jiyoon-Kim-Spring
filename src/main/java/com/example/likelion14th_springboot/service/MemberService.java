@@ -43,4 +43,8 @@ public class MemberService {
 
         return memberRepository.findByAgeGreaterThanEqual(20, pageable);
     }
+
+    public List<Member> getMembersByNamePrefix(String name) {
+        return memberRepository.findByNameStartsWith(name);
+    }
 }

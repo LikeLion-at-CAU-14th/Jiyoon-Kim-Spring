@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface MemberRepository extends JpaRepository<Member, Long> {
@@ -16,4 +17,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     // Jpa Repository 기본 제공.
 
     Page<Member> findByAgeGreaterThanEqual(int age, Pageable pageable);
+
+    List<Member> findByNameStartsWith(String name);
 }
