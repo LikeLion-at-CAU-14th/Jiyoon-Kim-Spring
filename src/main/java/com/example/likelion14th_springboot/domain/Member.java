@@ -11,7 +11,6 @@ import java.util.*;
 @Entity
 @Getter
 @NoArgsConstructor
-
 public class Member {
 
     @Id
@@ -32,6 +31,18 @@ public class Member {
 
     @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL)
     private Set<Product> products = new HashSet<>();
+
+    @Builder
+    public Member(String name, String address, String email, String phoneNumber,
+                  Role role, Boolean isAdmin, Integer deposit) {
+        this.name = name;
+        this.address = address;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.role = role;
+        this.isAdmin = isAdmin;
+        this.deposit = deposit;
+    }
 
     public void chargeDeposit(int money){
         this.deposit += money;
