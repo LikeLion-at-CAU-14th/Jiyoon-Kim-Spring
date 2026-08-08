@@ -32,4 +32,15 @@ public class MemberService {
         Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
         return memberRepository.findAll(pageable);
     }
+
+    public Page<Member> getAdultMembersSortedByName(int page, int size) {
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by("name").ascending()
+        );
+
+        return memberRepository.findByAgeGreaterThanEqual(20, pageable);
+    }
 }

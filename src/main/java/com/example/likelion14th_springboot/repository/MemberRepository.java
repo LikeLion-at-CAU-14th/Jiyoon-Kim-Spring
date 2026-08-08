@@ -14,4 +14,6 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     // Page<Member> findAll(Pageable pageable);
     // Jpa Repository 기본 제공.
+
+    Page<Member> findByAgeGreaterThanEqual(int age, Pageable pageable);
 }
