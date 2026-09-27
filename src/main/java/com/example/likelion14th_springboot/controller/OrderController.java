@@ -67,4 +67,12 @@ public class OrderController {
                 orderService.updateShippingAddress(orderId, dto)
         );
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteOrder(
+            @PathVariable("id") Long orderId) {
+
+        orderService.deleteOrder(orderId);
+        return ResponseEntity.noContent().build();
+    }
 }

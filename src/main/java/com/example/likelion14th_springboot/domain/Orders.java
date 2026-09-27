@@ -40,6 +40,9 @@ public class Orders extends BaseTimeEntity {
     @OneToOne(mappedBy = "orders", cascade = CascadeType.ALL)
     private Coupon coupon;
 
+    @Column(nullable = false)
+    private boolean deleted;
+
     public void addProduct(Product product, Integer quantity) {
         ProductOrders orderItem = ProductOrders.builder()
                 .orders(this)
@@ -58,5 +61,15 @@ public class Orders extends BaseTimeEntity {
         }
 
         this.shippingAddress = shippingAddress;
+    }
+
+    public void softDelete() {
+        if (this.deliverStatus != DeliverStatus.COMPLETED) {
+            throw new IllegalArgumentException(
+                    "배송 완료된 주문만 삭제할 수 있습니다."
+            );
+        }
+
+        this.deleted = true;
     }
 }
