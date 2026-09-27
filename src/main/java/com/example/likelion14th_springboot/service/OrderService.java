@@ -13,6 +13,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -35,24 +39,87 @@ public class OrderService {
             throw new IllegalArgumentException("구매자만 주문할 수 있습니다.");
         }
 
-        // 3. 주문 객체 생성
+        // 3. 같은 상품이 여러 번 들어오면 수량 합산
+        Map<Long, Integer> quantities = new LinkedHashMap<>();
+
+        for (OrderCreateRequestDto.OrderItemRequestDto item : dto.getItems()) {
+            int previousQuantity =
+                    quantities.getOrDefault(item.getProductId(), 0);
+
+            long combinedQuantity =
+                    (long) previousQuantity + item.getQuantity();
+
+            if (combinedQuantity > Integer.MAX_VALUE) {
+                throw new IllegalArgumentException("주문 수량이 너무 큽니다.");
+            }
+
+            quantities.put(item.getProductId(), (int) combinedQuantity);
+        }
+
+        // 4. 상품별 재고 확인 및 총 주문 금액 계산
+        Map<Long, Product> products = new HashMap<>();
+        long totalPrice = 0L;
+
+        for (Map.Entry<Long, Integer> entry : quantities.entrySet()) {
+            Long productId = entry.getKey();
+            int quantity = entry.getValue();
+
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(() ->
+                            new IllegalArgumentException(
+                                    "상품을 찾을 수 없습니다. ID: " + productId
+                            ));
+
+            if (product.getStock() == null
+                    || product.getStock() < quantity) {
+                throw new IllegalArgumentException(
+                        "상품 재고가 부족합니다: " + product.getName()
+                );
+            }
+
+            if (product.getPrice() == null || product.getPrice() < 0) {
+                throw new IllegalArgumentException(
+                        "상품 가격이 올바르지 않습니다: " + product.getName()
+                );
+            }
+
+            totalPrice += (long) product.getPrice() * quantity;
+
+            // 현재 잔액 필드와 차감 메서드가 Integer/int 타입이므로 제한
+            if (totalPrice > Integer.MAX_VALUE) {
+                throw new IllegalArgumentException(
+                        "주문 금액이 처리 가능한 범위를 초과했습니다."
+                );
+            }
+
+            products.put(productId, product);
+        }
+
+        // 5. 구매자 잔액 확인
+        if (buyer.getDeposit() == null
+                || buyer.getDeposit() < totalPrice) {
+            throw new IllegalArgumentException("계좌 잔액이 부족합니다.");
+        }
+
+        // 6. 주문 생성
         Orders order = Orders.builder()
                 .buyer(buyer)
                 .shippingAddress(dto.getShippingAddress().toEmbeddable())
                 .build();
 
-        // 4. 상품 조회 후 주문에 추가
-        for (OrderCreateRequestDto.OrderItemRequestDto item : dto.getItems()) {
-            Product product = productRepository.findById(item.getProductId())
-                    .orElseThrow(() ->
-                            new IllegalArgumentException(
-                                    "상품을 찾을 수 없습니다. ID: " + item.getProductId()
-                            ));
+        // 7. 상품 재고 차감 및 주문 상품 추가
+        for (Map.Entry<Long, Integer> entry : quantities.entrySet()) {
+            Product product = products.get(entry.getKey());
+            int quantity = entry.getValue();
 
-            order.addProduct(product, item.getQuantity());
+            product.reduceStock(quantity);
+            order.addProduct(product, quantity);
         }
 
-        // 5. 주문 저장 및 응답 변환
+        // 8. 구매자 잔액 차감
+        buyer.useDeposit((int) totalPrice);
+
+        // 9. 주문 저장 및 응답 반환
         Orders savedOrder = orderRepository.save(order);
         return OrderResponseDto.fromEntity(savedOrder);
     }
