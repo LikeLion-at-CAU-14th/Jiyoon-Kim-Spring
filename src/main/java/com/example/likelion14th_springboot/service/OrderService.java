@@ -4,6 +4,7 @@ import com.example.likelion14th_springboot.domain.Member;
 import com.example.likelion14th_springboot.domain.Orders;
 import com.example.likelion14th_springboot.domain.Product;
 import com.example.likelion14th_springboot.dto.request.OrderCreateRequestDto;
+import com.example.likelion14th_springboot.dto.request.OrderUpdateRequestDto;
 import com.example.likelion14th_springboot.dto.response.OrderResponseDto;
 import com.example.likelion14th_springboot.enums.Role;
 import com.example.likelion14th_springboot.repository.MemberRepository;
@@ -17,6 +18,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 
 @Service
 @RequiredArgsConstructor
@@ -197,4 +199,31 @@ public class OrderService {
 //
 //        return OrderResponseDto.fromEntity(order);
 //    }
+
+    @Transactional
+    public OrderResponseDto updateShippingAddress(
+            Long orderId, OrderUpdateRequestDto dto) {
+
+        // 1. 배송정보 입력값 확인
+        if (isBlank(dto.getRecipient())
+                || isBlank(dto.getPhoneNumber())
+                || isBlank(dto.getRoadAddress())
+                || isBlank(dto.getDetailAddress())
+                || isBlank(dto.getPostalCode())) {
+            throw new IllegalArgumentException(
+                    "배송정보 5개 항목을 모두 입력해주세요."
+            );
+        }
+
+        // 2. 주문 조회
+        Orders order = orderRepository.findById(orderId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("주문을 찾을 수 없습니다."));
+
+        // 3. 엔티티 메서드에서 배송 상태 확인 후 수정
+        order.updateShippingAddress(dto.toEmbeddable());
+
+        // 4. 변경된 정보 반환
+        return OrderResponseDto.fromEntity(order);
+    }
 }

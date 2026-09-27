@@ -49,4 +49,14 @@ public class Orders extends BaseTimeEntity {
 
         this.productOrders.add(orderItem);
     }
+
+    public void updateShippingAddress(ShippingAddress shippingAddress) {
+        if (this.deliverStatus != DeliverStatus.PREPARATION) {
+            throw new IllegalArgumentException(
+                    "배송 준비 중인 주문만 배송정보를 수정할 수 있습니다."
+            );
+        }
+
+        this.shippingAddress = shippingAddress;
+    }
 }

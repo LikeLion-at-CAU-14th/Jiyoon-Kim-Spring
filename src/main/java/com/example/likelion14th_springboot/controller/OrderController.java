@@ -1,6 +1,7 @@
 package com.example.likelion14th_springboot.controller;
 
 import com.example.likelion14th_springboot.dto.request.OrderCreateRequestDto;
+import com.example.likelion14th_springboot.dto.request.OrderUpdateRequestDto;
 import com.example.likelion14th_springboot.dto.response.OrderResponseDto;
 import com.example.likelion14th_springboot.service.OrderService;
 import lombok.RequiredArgsConstructor;
@@ -56,4 +57,14 @@ public class OrderController {
 //                orderService.getOrderById(orderId, buyerId)
 //        );
 //    }
+
+    @PutMapping("/{id}/shipping-address")
+    public ResponseEntity<OrderResponseDto> updateShippingAddress(
+            @PathVariable("id") Long orderId,
+            @RequestBody OrderUpdateRequestDto dto) {
+
+        return ResponseEntity.ok(
+                orderService.updateShippingAddress(orderId, dto)
+        );
+    }
 }
