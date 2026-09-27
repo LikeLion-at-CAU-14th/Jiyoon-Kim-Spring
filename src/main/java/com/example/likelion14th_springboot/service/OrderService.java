@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -162,4 +163,38 @@ public class OrderService {
     private boolean isBlank(String value) {
         return value == null || value.isBlank();
     }
+
+    @Transactional(readOnly = true)
+    public List<OrderResponseDto> getOrdersByBuyer(Long buyerId) {
+        if (!memberRepository.existsById(buyerId)) {
+            throw new IllegalArgumentException("구매자를 찾을 수 없습니다.");
+        }
+
+        return orderRepository.findAllByBuyer_IdOrderByIdDesc(buyerId)
+                .stream()
+                .map(OrderResponseDto::fromEntity)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public OrderResponseDto getOrderById(Long orderId) {
+        Orders order = orderRepository.findById(orderId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("주문을 찾을 수 없습니다."));
+
+        return OrderResponseDto.fromEntity(order);
+    }
+
+
+    // 자신의 주문만 조회 가능
+//    @Transactional(readOnly = true)
+//    public OrderResponseDto getOrderById(Long orderId, Long buyerId) {
+//        Orders order = orderRepository.findByIdAndBuyer_Id(orderId, buyerId)
+//                .orElseThrow(() ->
+//                        new IllegalArgumentException(
+//                                "주문이 존재하지 않거나 조회할 수 없는 주문입니다."
+//                        ));
+//
+//        return OrderResponseDto.fromEntity(order);
+//    }
 }
