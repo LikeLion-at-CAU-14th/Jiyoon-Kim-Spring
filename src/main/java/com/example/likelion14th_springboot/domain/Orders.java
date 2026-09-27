@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -15,23 +16,37 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class Orders extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
-    private DeliverStatus deliverStatus; // 배송상태
+    private DeliverStatus deliverStatus = DeliverStatus.PREPARATION;
 
     @ManyToOne
-    @JoinColumn(name ="buyer_id")
+    @JoinColumn(name = "buyer_id")
     private Member buyer;
 
+    @Embedded
+    private ShippingAddress shippingAddress;
+
+    @Builder.Default
     @OneToMany(mappedBy = "orders", cascade = CascadeType.ALL)
-    private List<ProductOrders> productOrders;
+    private List<ProductOrders> productOrders = new ArrayList<>();
 
     @OneToOne(mappedBy = "orders", cascade = CascadeType.ALL)
     private Coupon coupon;
+
+    public void addProduct(Product product, Integer quantity) {
+        ProductOrders orderItem = ProductOrders.builder()
+                .orders(this)
+                .product(product)
+                .quantity(quantity)
+                .build();
+
+        this.productOrders.add(orderItem);
+    }
 }
