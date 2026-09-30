@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -15,23 +16,60 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class Orders extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
-    private DeliverStatus deliverStatus; // 배송상태
+    private DeliverStatus deliverStatus = DeliverStatus.PREPARATION;
 
     @ManyToOne
-    @JoinColumn(name ="buyer_id")
+    @JoinColumn(name = "buyer_id")
     private Member buyer;
 
+    @Embedded
+    private ShippingAddress shippingAddress;
+
+    @Builder.Default
     @OneToMany(mappedBy = "orders", cascade = CascadeType.ALL)
-    private List<ProductOrders> productOrders;
+    private List<ProductOrders> productOrders = new ArrayList<>();
 
     @OneToOne(mappedBy = "orders", cascade = CascadeType.ALL)
     private Coupon coupon;
+
+    @Column(nullable = false)
+    private boolean deleted;
+
+    public void addProduct(Product product, Integer quantity) {
+        ProductOrders orderItem = ProductOrders.builder()
+                .orders(this)
+                .product(product)
+                .quantity(quantity)
+                .build();
+
+        this.productOrders.add(orderItem);
+    }
+
+    public void updateShippingAddress(ShippingAddress shippingAddress) {
+        if (this.deliverStatus != DeliverStatus.PREPARATION) {
+            throw new IllegalArgumentException(
+                    "배송 준비 중인 주문만 배송정보를 수정할 수 있습니다."
+            );
+        }
+
+        this.shippingAddress = shippingAddress;
+    }
+
+    public void softDelete() {
+        if (this.deliverStatus != DeliverStatus.COMPLETED) {
+            throw new IllegalArgumentException(
+                    "배송 완료된 주문만 삭제할 수 있습니다."
+            );
+        }
+
+        this.deleted = true;
+    }
 }
