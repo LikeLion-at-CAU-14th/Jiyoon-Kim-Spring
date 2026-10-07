@@ -2,7 +2,9 @@ package com.example.likelion14th_springboot.domain;
 
 import com.example.likelion14th_springboot.enums.Role;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -16,13 +18,14 @@ public class Member {
     private Long id;
 
     private String name;
+    private String password;
     private String address;
     private String email;
     private String phoneNumber;
     private Integer age;
 
     @Builder
-    public Member(String name, String address, String email, String phoneNumber, Integer age, Role role, Boolean isAdmin, Integer deposit) {
+    public Member(String name, String address, String email, String phoneNumber, Integer age, Role role, Boolean isAdmin, Integer deposit, String password) {
         this.name = name;
         this.address = address;
         this.email = email;
@@ -31,6 +34,7 @@ public class Member {
         this.isAdmin = isAdmin;
         this.deposit = deposit;
         this.age = age;
+        this.password = password;
     }
 
     @Enumerated(EnumType.STRING)
