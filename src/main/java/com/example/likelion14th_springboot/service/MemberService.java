@@ -66,4 +66,15 @@ public class MemberService {
         // 유저 정보 저장
         memberRepository.save(member);
     }
+
+    public Member login(JoinRequestDto joinRequestDto) {
+        Member member = memberRepository.findByName(joinRequestDto.getName())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+
+        if (!bCryptPasswordEncoder.matches(joinRequestDto.getPassword(), member.getPassword())) {
+            return null;
+        }
+
+        return member;
+    }
 }
