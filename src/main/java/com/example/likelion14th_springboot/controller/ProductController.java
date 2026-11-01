@@ -51,4 +51,10 @@ public class ProductController {
         productService.deleteProduct(id, dto);
         return ResponseEntity.ok("상품이 성공적으로 삭제되었습니다.");
     }
+
+    // 내가 판매자인 상품 목록 조회
+    @GetMapping("/my")
+    public ResponseEntity<List<ProductResponseDto>> getMyProducts() {
+        return ResponseEntity.ok(productService.getMyProducts());
+    }
 }
