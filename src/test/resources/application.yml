@@ -1,0 +1,18 @@
+spring:
+  profiles:
+    active: local
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: test-dummy-client-id
+            client-secret: test-dummy-client-secret
+            scope:
+              - email
+              - profile
+            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+
+# 테스트 전용 더미 값 (실제 운영 시크릿과 무관, CI에서 사용)
+jwt:
+  secret: test-only-dummy-jwt-secret-key-for-ci-do-not-use-in-production
