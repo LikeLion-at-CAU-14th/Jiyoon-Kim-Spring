@@ -8,6 +8,7 @@ import com.example.likelion14th_springboot.dto.request.ProductUpdateRequestDto;
 import com.example.likelion14th_springboot.dto.response.ProductResponseDto;
 import com.example.likelion14th_springboot.repository.MemberRepository;
 import com.example.likelion14th_springboot.repository.ProductRepository;
+import com.example.likelion14th_springboot.config.PrincipalHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -93,5 +94,23 @@ public class ProductService {
 
         // 4. DB에서 상품 완전 삭제
         productRepository.delete(product);
+    }
+
+    public List<ProductResponseDto> getMyProducts() {
+
+        // JWT를 통해 현재 로그인한 사용자의 이메일 가져오기
+        String email = PrincipalHandler.getUsernameFromPrincipal();
+
+        // 이메일을 이용해 현재 로그인한 회원 조회
+        Member seller = memberRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("존재하지 않는 사용자입니다.")
+                );
+
+        // 해당 회원이 판매자인 상품만 조회
+        return productRepository.findAllBySeller(seller)
+                .stream()
+                .map(ProductResponseDto::fromEntity)
+                .toList();
     }
 }
